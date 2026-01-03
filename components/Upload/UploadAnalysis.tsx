@@ -26,26 +26,53 @@ export const UploadAnalysis = ({ onBack }: { onBack: () => void }) => {
 
     setError(null);
     setLoadingState("UPLOADING");
-    
-    // Sim Upload
-    setTimeout(() => {
-        setLoadingState("PROCESSING");
-        
-        // Sim Processing Matrix (Faster)
-        setTimeout(async () => {
-            setLoadingState("CLASSIFYING");
-            
-            // Actual API Call
-            try {
-                const response = await predictObject(file);
+
+    // Resize Logic (Client-Side Optimization)
+    const img = new Image();
+    img.src = URL.createObjectURL(file);
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      const TARGET_SIZE = 224;
+      canvas.width = TARGET_SIZE;
+      canvas.height = TARGET_SIZE;
+      const ctx = canvas.getContext("2d");
+
+      if (ctx) {
+        // Center Crop Strategy
+        const minDim = Math.min(img.width, img.height);
+        const startX = (img.width - minDim) / 2;
+        const startY = (img.height - minDim) / 2;
+
+        ctx.drawImage(img, startX, startY, minDim, minDim, 0, 0, TARGET_SIZE, TARGET_SIZE);
+
+        canvas.toBlob((blob) => {
+          if (!blob) {
+             setError("Image processing failed");
+             setLoadingState("IDLE");
+             return;
+          }
+
+          // Sim Visual Delays (Reduced for speed feeling)
+          setTimeout(() => {
+            setLoadingState("PROCESSING");
+
+            setTimeout(async () => {
+              setLoadingState("CLASSIFYING");
+
+              // Actual API Call with Optimized Blob
+              try {
+                const response = await predictObject(blob);
                 setResult(response);
-                setTimeout(() => setLoadingState("DONE"), 500); // Snappy finish
-            } catch (err) {
+                setTimeout(() => setLoadingState("DONE"), 300); 
+              } catch (err) {
                 setLoadingState("IDLE");
                 setError("Analysis Failed. Please try again.");
-            }
-        }, 700);
-    }, 700);
+              }
+            }, 500);
+          }, 500);
+        }, "image/jpeg", 0.8);
+      }
+    };
   };
 
   return (

@@ -7,14 +7,22 @@ interface HudOverlayProps {
   isAnalyzing: boolean;
   hasError: boolean;
   confidence?: number;
+  latency?: number;
 }
 
 export const HudOverlay: React.FC<HudOverlayProps> = ({
   isAnalyzing,
   hasError,
   confidence = 0,
+  latency = 0,
 }) => {
   const isLocked = confidence > 0.8;
+
+  const getLatencyColor = (ms: number) => {
+    if (ms < 300) return "text-green-500";
+    if (ms < 1000) return "text-yellow-500";
+    return "text-red-500";
+  };
 
   return (
     <div className="absolute inset-0 pointer-events-none">
@@ -94,6 +102,15 @@ export const HudOverlay: React.FC<HudOverlayProps> = ({
           <span>MODE</span>
           <span className="text-accent">LIVE</span>
         </div>
+        <div className="flex justify-between gap-8 items-center">
+          <span>NET</span>
+          <div className="flex items-center gap-2">
+            <SignalBars latency={latency} />
+            <span className={`${getLatencyColor(latency)} transition-colors min-w-[60px] text-right`}>
+              {latency > 0 ? `${latency}ms` : '--'}
+            </span>
+          </div>
+        </div>
         <div className="flex justify-between gap-8">
           <span>SCAN</span>
           <span className={`${isLocked ? 'text-green-500' : 'text-accent animate-pulse'}`}>
@@ -105,6 +122,41 @@ export const HudOverlay: React.FC<HudOverlayProps> = ({
       {/* Decorative 'Geometry' Angles */}
       <div className="absolute bottom-8 right-8 w-32 h-32 border-b-2 border-r-2 border-accent/20 rounded-br-3xl" />
       <div className="absolute bottom-8 left-8 w-32 h-32 border-b-2 border-l-2 border-accent/20 rounded-bl-3xl" />
+    </div>
+  );
+};
+
+const SignalBars: React.FC<{ latency: number }> = ({ latency }) => {
+  // 4 bars total
+  // < 300ms: 4 bars
+  // < 600ms: 3 bars
+  // < 1000ms: 2 bars
+  // > 1000ms: 1 bar
+  
+  const getStrength = () => {
+    if (latency === 0) return 0;
+    if (latency < 300) return 4;
+    if (latency < 600) return 3;
+    if (latency < 1000) return 2;
+    return 1;
+  };
+
+  const strength = getStrength();
+
+  return (
+    <div className="flex items-end gap-1 h-3">
+      {[1, 2, 3, 4].map((bar) => (
+        <div
+          key={bar}
+          className={`w-1 rounded-sm transition-all duration-300 ${
+            bar <= strength
+              ? strength === 1 ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]' : 
+                strength === 2 ? 'bg-yellow-500' : 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]'
+              : 'bg-slate-700/50'
+          }`}
+          style={{ height: `${bar * 25}%` }}
+        />
+      ))}
     </div>
   );
 };

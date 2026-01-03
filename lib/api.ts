@@ -1,11 +1,15 @@
 import axios from "axios";
 
 // Real API endpoint
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
+
+if(!API_BASE_URL){
+    throw new Error("API_BASE_URL is not defined");
+}
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 5000, 
+  timeout: 0, 
   headers: {
     "Content-Type": "multipart/form-data",
   },
@@ -31,6 +35,7 @@ export const predictObject = async (
       id: response.data.id,
     };
   } catch (error) {
+    console.log(error)
     throw error;
   }
 };

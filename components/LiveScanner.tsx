@@ -8,7 +8,7 @@ import { ResultDisplay } from "@/components/Scanner/ResultDisplay";
 import { AlertCircle } from "lucide-react";
 
 export const LiveScanner = ({ onBack }: { onBack: () => void }) => {
-  const { videoRef, prediction, confidence, loading, error } = useWasteDetection();
+  const { videoRef, prediction, confidence, loading, error, latency } = useWasteDetection();
 
   const result = prediction
     ? { label: prediction, confidence, id: 0 }
@@ -49,6 +49,7 @@ export const LiveScanner = ({ onBack }: { onBack: () => void }) => {
             isAnalyzing={loading} 
             hasError={!!error} 
             confidence={result?.confidence || 0}
+            latency={latency}
           />
           
           <ResultDisplay result={result} />

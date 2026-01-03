@@ -12,6 +12,7 @@ export const useWasteDetection = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [isReady, setIsReady] = useState<boolean>(false);
+  const [latency, setLatency] = useState<number>(0);
 
   // Webcam Initialization
 
@@ -48,6 +49,8 @@ export const useWasteDetection = () => {
 
   // Inference Loop
 
+  const isProcessing = useRef(false);
+
   useEffect(() => {
     if (!isReady) return;
 
@@ -57,24 +60,40 @@ export const useWasteDetection = () => {
     }
 
     const captureAndAnalyze = async () => {
+      if (isProcessing.current) return;
+
       const video = videoRef.current;
       const canvas = canvasRef.current;
 
       if (!video || !canvas || video.readyState !== video.HAVE_ENOUGH_DATA) return;
 
-      // Draw current frame
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+      // Draw current frame (Center Crop + Resize to 224x224)
+      const TARGET_SIZE = 224;
+      canvas.width = TARGET_SIZE;
+      canvas.height = TARGET_SIZE;
+      
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
-      ctx.drawImage(video, 0, 0);
+      // Calculate Center Crop
+      const minDim = Math.min(video.videoWidth, video.videoHeight);
+      const startX = (video.videoWidth - minDim) / 2;
+      const startY = (video.videoHeight - minDim) / 2;
+
+      ctx.drawImage(
+        video, 
+        startX, startY, minDim, minDim, // Source (Crop)
+        0, 0, TARGET_SIZE, TARGET_SIZE  // Destination (Resize)
+      );
 
       // Convert to Blob and Predict
       canvas.toBlob(async (blob) => {
         if (!blob) return;
 
+        isProcessing.current = true;
         setLoading(true);
+        const startTime = performance.now();
+        
         try {
           const result = await predictObject(blob);
           
@@ -90,7 +109,10 @@ export const useWasteDetection = () => {
         } catch (err) {
             // Silently fail to keep the experience smooth
         } finally {
+          const endTime = performance.now();
+          setLatency(Math.round(endTime - startTime));
           setLoading(false);
+          isProcessing.current = false;
         }
       }, "image/jpeg", 0.7); // 0.7 quality to reduce payload size
     };
@@ -107,6 +129,7 @@ export const useWasteDetection = () => {
     confidence,
     loading,
     error,
-    isReady
+    isReady,
+    latency
   };
 };
