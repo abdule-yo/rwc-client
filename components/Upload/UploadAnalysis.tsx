@@ -11,6 +11,7 @@ export const UploadAnalysis = ({ onBack }: { onBack: () => void }) => {
     "IDLE" | "UPLOADING" | "PROCESSING" | "CLASSIFYING" | "DONE"
   >("IDLE");
   const [result, setResult] = useState<PredictionResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -23,29 +24,28 @@ export const UploadAnalysis = ({ onBack }: { onBack: () => void }) => {
     reader.onload = (e) => setImage(e.target?.result as string);
     reader.readAsDataURL(file);
 
-    // Start Simulation Sequence
+    setError(null);
     setLoadingState("UPLOADING");
     
-    // 1. Sim Upload
+    // Sim Upload
     setTimeout(() => {
         setLoadingState("PROCESSING");
         
-        // 2. Sim Processing Matrix (Faster)
+        // Sim Processing Matrix (Faster)
         setTimeout(async () => {
             setLoadingState("CLASSIFYING");
             
-            // 3. Actual API Call
+            // Actual API Call
             try {
                 const response = await predictObject(file);
                 setResult(response);
                 setTimeout(() => setLoadingState("DONE"), 500); // Snappy finish
             } catch (err) {
-                console.error(err);
-                setLoadingState("IDLE"); // Reset on error
-                alert("Analysis Failed. Please try again.");
+                setLoadingState("IDLE");
+                setError("Analysis Failed. Please try again.");
             }
-        }, 700); // Was 1500
-    }, 700); // Was 1500
+        }, 700);
+    }, 700);
   };
 
   return (
@@ -102,13 +102,24 @@ export const UploadAnalysis = ({ onBack }: { onBack: () => void }) => {
         {/* Right Column: Status & Results */}
         <div className="flex flex-col justify-center space-y-8 min-h-[400px]">
             <AnimatePresence mode="wait">
-                {loadingState === "IDLE" && (
+                {loadingState === "IDLE" && !error && (
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         className="text-center text-foreground/40 font-mono"
                     >
                         Waiting for input...
+                    </motion.div>
+                )}
+
+                {error && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="bg-red-500/10 border border-red-500/50 rounded-xl p-6 text-center space-y-2"
+                    >
+                        <p className="text-red-500 font-bold font-orbitron">ANALYZED FAILED</p>
+                        <p className="text-foreground/60 text-sm">{error}</p>
                     </motion.div>
                 )}
 

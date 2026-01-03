@@ -5,7 +5,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 5000, // Increased timeout for model inference
+  timeout: 5000, 
   headers: {
     "Content-Type": "multipart/form-data",
   },
@@ -31,7 +31,6 @@ export const predictObject = async (
       id: response.data.id,
     };
   } catch (error) {
-    console.error("API call failed:", error);
     throw error;
   }
 };

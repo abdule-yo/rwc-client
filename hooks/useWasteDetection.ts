@@ -13,7 +13,8 @@ export const useWasteDetection = () => {
   const [error, setError] = useState<string | null>(null);
   const [isReady, setIsReady] = useState<boolean>(false);
 
-  // 1. Webcam Initialization
+  // Webcam Initialization
+
   useEffect(() => {
     const initWebcam = async () => {
       try {
@@ -32,7 +33,6 @@ export const useWasteDetection = () => {
           };
         }
       } catch (err) {
-        console.error("Webcam access error:", err);
         setError("Camera Access Denied");
       }
     };
@@ -46,7 +46,8 @@ export const useWasteDetection = () => {
     };
   }, []);
 
-  // 2. The Inference Loop
+  // Inference Loop
+
   useEffect(() => {
     if (!isReady) return;
 
@@ -87,11 +88,7 @@ export const useWasteDetection = () => {
           }
           // If < threshold, we do nothing (keep previous result)
         } catch (err) {
-            // Graceful error handling (silently fail implies we just keep trying)
-           console.error("Prediction failed:", err);
-           // We might not want to show an error on UI for every single failed frame if backend blips.
-           // calling it 'ANALYZING...' or similar could be handled by component logic, 
-           // but here we can just leave values as is or reset if critical.
+            // Silently fail to keep the experience smooth
         } finally {
           setLoading(false);
         }
