@@ -1,6 +1,6 @@
 import axios from "axios";
 
-// Real API endpoint
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 if(!API_BASE_URL){
@@ -26,6 +26,25 @@ export const predictObject = async (
 ): Promise<PredictionResponse> => {
   const formData = new FormData();
   formData.append("file", imageBlob, "frame.jpg");
+
+  try {
+    const response = await apiClient.post("/predict", formData);
+    return {
+      label: response.data.label,
+      confidence: response.data.confidence,
+      id: response.data.id,
+    };
+  } catch (error) {
+    console.log(error)
+    throw error;
+  }
+};
+
+export const predictObjectFromUrl = async (
+  imageUrl: string
+): Promise<PredictionResponse> => {
+  const formData = new FormData();
+  formData.append("url", imageUrl);
 
   try {
     const response = await apiClient.post("/predict", formData);

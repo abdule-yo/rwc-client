@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, Loader2, CheckCircle2, Scan } from "lucide-react";
-import { predictObject, PredictionResponse } from "@/lib/api";
+import { Upload, Loader2, CheckCircle2, Scan, Link, X } from "lucide-react";
+import { predictObject, predictObjectFromUrl, PredictionResponse } from "@/lib/api";
 
 export const UploadAnalysis = ({ onBack }: { onBack: () => void }) => {
   const [image, setImage] = useState<string | null>(null);
+  const [imageSource, setImageSource] = useState<"file" | "url" | null>(null);
   const [loadingState, setLoadingState] = useState<
     "IDLE" | "UPLOADING" | "PROCESSING" | "CLASSIFYING" | "DONE"
   >("IDLE");
@@ -14,7 +15,60 @@ export const UploadAnalysis = ({ onBack }: { onBack: () => void }) => {
   const [error, setError] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const dropZoneRef = useRef<HTMLDivElement>(null);
 
+  // URL validation helper
+  const isValidImageUrl = (url: string): boolean => {
+    try {
+      const parsed = new URL(url);
+      return parsed.protocol === "http:" || parsed.protocol === "https:";
+    } catch {
+      return false;
+    }
+  };
+
+  // Handle paste event for URL
+  useEffect(() => {
+    const handlePaste = async (e: ClipboardEvent) => {
+      const pastedText = e.clipboardData?.getData("text")?.trim();
+      
+      if (pastedText && isValidImageUrl(pastedText)) {
+        e.preventDefault();
+        handleUrlSubmit(pastedText);
+      }
+    };
+
+    document.addEventListener("paste", handlePaste);
+    return () => document.removeEventListener("paste", handlePaste);
+  }, []);
+
+  // Handle URL-based classification
+  const handleUrlSubmit = async (url: string) => {
+    setImage(url);
+    setImageSource("url");
+    setError(null);
+    setLoadingState("UPLOADING");
+
+    // Simulated visual delays for UX
+    setTimeout(() => {
+      setLoadingState("PROCESSING");
+
+      setTimeout(async () => {
+        setLoadingState("CLASSIFYING");
+
+        try {
+          const response = await predictObjectFromUrl(url);
+          setResult(response);
+          setTimeout(() => setLoadingState("DONE"), 300);
+        } catch (err) {
+          setLoadingState("IDLE");
+          setError("Analysis Failed. Could not fetch or classify the image.");
+        }
+      }, 500);
+    }, 500);
+  };
+
+  // Handle file upload (existing logic)
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -24,6 +78,7 @@ export const UploadAnalysis = ({ onBack }: { onBack: () => void }) => {
     reader.onload = (e) => setImage(e.target?.result as string);
     reader.readAsDataURL(file);
 
+    setImageSource("file");
     setError(null);
     setLoadingState("UPLOADING");
 
@@ -75,6 +130,15 @@ export const UploadAnalysis = ({ onBack }: { onBack: () => void }) => {
     };
   };
 
+  // Reset state
+  const handleReset = () => {
+    setImage(null);
+    setImageSource(null);
+    setResult(null);
+    setError(null);
+    setLoadingState("IDLE");
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-foreground p-8 flex flex-col items-center">
       {/* Header */}
@@ -92,10 +156,11 @@ export const UploadAnalysis = ({ onBack }: { onBack: () => void }) => {
         {/* Left Column: Upload Zone */}
         <div className="space-y-8">
             <div 
-                onClick={() => fileInputRef.current?.click()}
+                ref={dropZoneRef}
+                onClick={() => !image && fileInputRef.current?.click()}
                 className={`
-                    relative h-96 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all duration-300
-                    ${image ? 'border-accent/50 bg-slate-900/50' : 'border-slate-700 hover:border-accent hover:bg-slate-900'}
+                    relative h-96 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center transition-all duration-300
+                    ${image ? 'border-accent/50 bg-slate-900/50' : 'border-slate-700 hover:border-accent hover:bg-slate-900 cursor-pointer'}
                 `}
             >
                 <input 
@@ -107,11 +172,34 @@ export const UploadAnalysis = ({ onBack }: { onBack: () => void }) => {
                 />
                 
                 {image ? (
-                    <img 
-                        src={image} 
-                        alt="Analyzed Item" 
-                        className="h-full w-full object-contain rounded-xl p-4"
-                    />
+                    <div className="relative h-full w-full">
+                        <img 
+                            src={image} 
+                            alt="Analyzed Item" 
+                            className="h-full w-full object-contain rounded-xl p-4"
+                            onError={() => {
+                              if (imageSource === "url") {
+                                setError("Could not load image from URL. Please check the link.");
+                                setImage(null);
+                                setLoadingState("IDLE");
+                              }
+                            }}
+                        />
+                        {loadingState === "DONE" && (
+                          <button
+                            onClick={handleReset}
+                            className="absolute top-4 right-4 p-2 rounded-full bg-slate-800/80 hover:bg-red-500/80 transition-colors"
+                          >
+                            <X className="w-4 h-4 text-white" />
+                          </button>
+                        )}
+                        {imageSource === "url" && (
+                          <div className="absolute bottom-4 left-4 flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/20 border border-accent/30">
+                            <Link className="w-3 h-3 text-accent" />
+                            <span className="text-xs font-mono text-accent">URL</span>
+                          </div>
+                        )}
+                    </div>
                 ) : (
                     <div className="text-center space-y-4">
                         <div className="w-20 h-20 rounded-full bg-slate-800 flex items-center justify-center mx-auto">
@@ -119,7 +207,13 @@ export const UploadAnalysis = ({ onBack }: { onBack: () => void }) => {
                         </div>
                         <div>
                             <p className="font-orbitron text-lg">Drop Specimen Here</p>
-                            <p className="text-sm text-foreground/40 mt-2">or click to browse database</p>
+                            <p className="text-sm text-foreground/40 mt-2">or click to browse</p>
+                        </div>
+                        <div className="flex items-center gap-2 justify-center pt-4 border-t border-slate-800 mx-8">
+                          <Link className="w-4 h-4 text-accent/60" />
+                          <p className="text-xs text-foreground/40 font-mono">
+                            Or paste an image URL (Ctrl+V / Cmd+V)
+                          </p>
                         </div>
                     </div>
                 )}
@@ -145,8 +239,14 @@ export const UploadAnalysis = ({ onBack }: { onBack: () => void }) => {
                         animate={{ opacity: 1, scale: 1 }}
                         className="bg-red-500/10 border border-red-500/50 rounded-xl p-6 text-center space-y-2"
                     >
-                        <p className="text-red-500 font-bold font-orbitron">ANALYZED FAILED</p>
+                        <p className="text-red-500 font-bold font-orbitron">ANALYSIS FAILED</p>
                         <p className="text-foreground/60 text-sm">{error}</p>
+                        <button
+                          onClick={handleReset}
+                          className="mt-4 px-4 py-2 text-xs font-mono text-accent border border-accent/30 rounded-lg hover:bg-accent/10 transition-colors"
+                        >
+                          TRY AGAIN
+                        </button>
                     </motion.div>
                 )}
 
@@ -161,7 +261,7 @@ export const UploadAnalysis = ({ onBack }: { onBack: () => void }) => {
                         {/* Progress Steps */}
                         <div className="space-y-4">
                             <Step 
-                                label="Uploading Specimen..." 
+                                label={imageSource === "url" ? "Fetching from URL..." : "Uploading Specimen..."} 
                                 status={loadingState === "UPLOADING" ? "active" : "complete"} 
                             />
                             <Step 
@@ -233,3 +333,4 @@ const Step = ({ label, status }: { label: string; status: "pending" | "active" |
         </div>
     )
 }
+
