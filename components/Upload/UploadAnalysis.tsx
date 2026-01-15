@@ -266,33 +266,118 @@ export const UploadAnalysis = ({ onBack }: { onBack: () => void }) => {
                 )}
 
                 {loadingState === "DONE" && result && (
-                    <motion.div
+                        <motion.div
                         key="result"
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="bg-slate-900/50 border border-accent/20 rounded-2xl p-8 space-y-6 backdrop-blur-sm"
+                        className="space-y-6"
                     >
-                        <div>
-                            <h3 className="text-sm font-mono text-accent uppercase tracking-widest mb-2">Analysis Complete</h3>
-                            <h2 className="text-4xl font-orbitron font-bold text-white mb-1">{result.label}</h2>
-                            <div className="text-xs font-mono text-foreground/40 mb-6">MODEL: GOOGLE VIT-BASE-PATCH16-224</div>
-                            <div className="h-1 w-20 bg-accent rounded-full mb-6" />
-                        </div>
+                        {/* Primary Prediction Card */}
+                        <motion.div 
+                            className="relative overflow-hidden bg-slate-900/80 border border-accent/20 rounded-3xl p-8 backdrop-blur-xl group"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2 }}
+                        >
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-accent/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+                            
+                            <div className="relative z-10 space-y-6">
+                                <div className="flex items-start justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-accent text-slate-950 font-bold font-orbitron text-xl">
+                                            01
+                                        </div>
+                                        <div>
+                                            <span className="text-[10px] font-mono text-accent/60 uppercase tracking-widest block mb-1">
+                                                Top Prediction
+                                            </span>
+                                            <h2 className="text-3xl sm:text-4xl font-orbitron font-bold text-white tracking-tight">
+                                                {result.top_prediction.label}
+                                            </h2>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="text-4xl font-bold font-orbitron text-accent">
+                                            {Math.round((result.top_prediction.confidence || 0) * 100)}<span className="text-lg">%</span>
+                                        </span>
+                                    </div>
+                                </div>
 
-                        <div className="space-y-2">
-                            <div className="flex justify-between text-sm font-mono text-foreground/60">
-                                <span>CONFIDENCE SCORE</span>
-                                <span>{(result.confidence * 100).toFixed(1)}%</span>
+                                <div className="space-y-2">
+                                    <div className="h-4 w-full bg-slate-800/50 rounded-full overflow-hidden border border-slate-700/50">
+                                        <motion.div 
+                                            initial={{ width: 0 }}
+                                            animate={{ width: `${(result.top_prediction.confidence || 0) * 100}%` }}
+                                            transition={{ duration: 1.5, ease: "easeOut", delay: 0.4 }}
+                                            className="h-full bg-accent relative"
+                                        >
+                                            <motion.div 
+                                                className="absolute inset-0 bg-white/20"
+                                                animate={{ x: ["-100%", "100%"] }}
+                                                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                                            />
+                                        </motion.div>
+                                    </div>
+                                </div>
+                                
+                                <div className="flex items-center gap-2">
+                                     <div className="h-1 w-1 rounded-full bg-accent/50" />
+                                     <p className="text-xs font-mono text-foreground/40">
+                                        Identified with high confidence using Google ViT model
+                                     </p>
+                                </div>
                             </div>
-                            <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
-                                <motion.div 
-                                    initial={{ width: 0 }}
-                                    animate={{ width: `${result.confidence * 100}%` }}
-                                    transition={{ duration: 1, ease: "easeOut" }}
-                                    className={`h-full ${result.confidence > 0.8 ? 'bg-green-500' : 'bg-yellow-500'}`}
-                                />
+                        </motion.div>
+
+                        {/* Alternative Predictions */}
+                        {result.predictions && result.predictions.length > 1 && (
+                            <div className="space-y-4">
+                                <motion.h4 
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ delay: 0.6 }}
+                                    className="text-xs font-mono text-foreground/40 uppercase tracking-widest pl-2"
+                                >
+                                    Alternative Classifications
+                                </motion.h4>
+                                
+                                <div className="grid gap-3">
+                                    {result.predictions.slice(1, 3).map((alt, index) => (
+                                        <motion.div
+                                            key={alt.label}
+                                            initial={{ opacity: 0, x: -10 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: 0.7 + (index * 0.1) }}
+                                            className="group relative overflow-hidden bg-slate-900/40 border border-slate-800 hover:border-slate-600 rounded-xl p-4 transition-colors"
+                                        >
+                                            <div className="flex items-center justify-between mb-2 relative z-10">
+                                                <div className="flex items-center gap-3">
+                                                    <span className="flex items-center justify-center w-5 h-5 rounded bg-slate-800 text-[10px] font-mono text-foreground/60">
+                                                        {index + 2}
+                                                    </span>
+                                                    <span className="font-medium text-foreground/80 group-hover:text-white transition-colors">
+                                                        {alt.label}
+                                                    </span>
+                                                </div>
+                                                <span className="text-xs font-mono text-foreground/40">
+                                                    {((alt.confidence || 0) * 100).toFixed(1)}%
+                                                </span>
+                                            </div>
+                                            
+                                            {/* Progress Bar Background */}
+                                            <div className="absolute bottom-0 left-0 h-0.5 bg-slate-800 w-full">
+                                                <motion.div 
+                                                    initial={{ width: 0 }}
+                                                    animate={{ width: `${(alt.confidence || 0) * 100}%` }}
+                                                    transition={{ duration: 1, delay: 0.8 + (index * 0.1) }}
+                                                    className="h-full bg-foreground/20 group-hover:bg-accent/50 transition-colors"
+                                                />
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                                </div>
                             </div>
-                        </div>
+                        )}
                     </motion.div>
                 )}
             </AnimatePresence>

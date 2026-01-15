@@ -19,12 +19,12 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({ result }) => {
     }
   }, [result]);
 
-  if (!displayResult) return null;
+  if (!displayResult || !displayResult.top_prediction) return null;
 
   const confidenceColor =
-    displayResult.confidence >= 0.85
+    displayResult.top_prediction.confidence >= 0.85
       ? "text-accent"
-      : displayResult.confidence >= 0.7
+      : displayResult.top_prediction.confidence >= 0.7
       ? "text-yellow-400"
       : "text-red-400";
 
@@ -32,7 +32,7 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({ result }) => {
     <div className="absolute bottom-24 left-1/2 -translate-x-1/2 pointer-events-none">
       <AnimatePresence mode="wait">
         <motion.div
-          key={displayResult.label}
+          key={displayResult.top_prediction.label}
           initial={{ opacity: 0, y: 20, scale: 0.9 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -20, scale: 0.9 }}
@@ -50,7 +50,7 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({ result }) => {
             className="relative"
           >
             <h1 className="text-6xl font-bold text-foreground font-orbitron tracking-tight">
-              {displayResult.label}
+              {displayResult.top_prediction.label}
             </h1>
             
             <motion.div
@@ -66,7 +66,7 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({ result }) => {
                 times: [0, 0.5, 1],
               }}
             >
-              {displayResult.label}
+              {displayResult.top_prediction.label}
             </motion.div>
           </motion.div>
 
@@ -79,7 +79,7 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({ result }) => {
           >
             <div className="h-px w-12 bg-gradient-to-r from-transparent to-accent" />
             <span className={`font-orbitron text-2xl font-semibold ${confidenceColor}`}>
-              {(displayResult.confidence * 100).toFixed(1)}%
+              {(displayResult.top_prediction.confidence * 100).toFixed(1)}%
             </span>
             <div className="h-px w-12 bg-gradient-to-l from-transparent to-accent" />
           </motion.div>

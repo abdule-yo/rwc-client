@@ -11,7 +11,18 @@ export const LiveScanner = ({ onBack }: { onBack: () => void }) => {
   const { videoRef, prediction, confidence, loading, error, latency } = useWasteDetection();
 
   const result = prediction
-    ? { label: prediction, confidence, id: 0 }
+    ? { 
+        label: prediction, 
+        confidence, 
+        id: 0,
+        predictions: [],
+        top_prediction: {
+          label: prediction,
+          confidence,
+          id: 0,
+          rank: 1
+        }
+      }
     : null;
 
   return (

@@ -15,10 +15,22 @@ export const apiClient = axios.create({
   },
 });
 
-export interface PredictionResponse {
+export interface PredictionItem {
+  rank: number;
   label: string;
   confidence: number;
   id: number;
+}
+
+export interface PredictionResponse {
+  // Backward compatibility
+  label: string;
+  confidence: number;
+  id: number;
+
+  // Hierarchical data
+  predictions: PredictionItem[];
+  top_prediction: PredictionItem;
 }
 
 export const predictObject = async (
@@ -29,11 +41,7 @@ export const predictObject = async (
 
   try {
     const response = await apiClient.post("/predict", formData);
-    return {
-      label: response.data.label,
-      confidence: response.data.confidence,
-      id: response.data.id,
-    };
+    return response.data;
   } catch (error) {
     console.log(error)
     throw error;
@@ -48,11 +56,7 @@ export const predictObjectFromUrl = async (
 
   try {
     const response = await apiClient.post("/predict", formData);
-    return {
-      label: response.data.label,
-      confidence: response.data.confidence,
-      id: response.data.id,
-    };
+    return response.data;
   } catch (error) {
     console.log(error)
     throw error;
