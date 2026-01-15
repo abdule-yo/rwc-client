@@ -26,25 +26,23 @@ export const HudOverlay: React.FC<HudOverlayProps> = ({
 
   return (
     <div className="absolute inset-0 pointer-events-none">
-      {/* Glowing Frame */}
+
       <div 
         className={`absolute inset-4 border border-accent/20 rounded-2xl shadow-[0_0_20px_rgba(6,182,212,0.1)] transition-colors duration-500 ${isLocked ? 'border-green-500/50 shadow-green-500/20' : ''}`} 
       />
       
-      {/* Scanning Grid */}
+  
       <div className="absolute inset-0 scanning-grid opacity-30" />
 
-      {/* Center Simulated Scanning Box */}
+    
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64">
-        {/* Corner Brackets */}
-        <CornerBrackets isLocked={isLocked} />
+  <CornerBrackets isLocked={isLocked} />
         
-        {/* Fake Laser Scan - Only when NOT locked */}
+  
         {!isLocked && (
             <div className="absolute left-0 right-0 h-0.5 bg-accent/80 shadow-[0_0_10px_rgba(6,182,212,0.8)] animate-laser-scan blur-[1px]" />
         )}
         
-        {/* Locked text */}
         {isLocked && (
             <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-green-500 font-mono text-xs tracking-[0.3em] font-bold animate-pulse">
                 TARGET LOCKED
@@ -52,7 +50,7 @@ export const HudOverlay: React.FC<HudOverlayProps> = ({
         )}
       </div>
 
-      {/* Scanning Line (Full Screen) - Optional, kept subtle */}
+      
       <motion.div
         className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/20 to-transparent"
         animate={{
@@ -65,7 +63,7 @@ export const HudOverlay: React.FC<HudOverlayProps> = ({
         }}
       />
 
-      {/* Status Indicator */}
+          
       <div className="absolute top-8 left-8">
         <motion.div
           className="flex items-center gap-3"
@@ -88,7 +86,7 @@ export const HudOverlay: React.FC<HudOverlayProps> = ({
         </motion.div>
       </div>
 
-      {/* HUD Info Bar - Top Right */}
+            
       <div className="absolute top-8 right-8 font-orbitron text-xs text-accent/80 space-y-1 bg-slate-950/50 backdrop-blur-md border border-accent/20 p-4 rounded-lg shadow-[0_0_15px_rgba(6,182,212,0.1)]">
         <div className="flex justify-between gap-8">
           <span>SYSTEM</span>
@@ -119,7 +117,7 @@ export const HudOverlay: React.FC<HudOverlayProps> = ({
         </div>
       </div>
       
-      {/* Decorative 'Geometry' Angles */}
+
       <div className="absolute bottom-8 right-8 w-32 h-32 border-b-2 border-r-2 border-accent/20 rounded-br-3xl" />
       <div className="absolute bottom-8 left-8 w-32 h-32 border-b-2 border-l-2 border-accent/20 rounded-bl-3xl" />
     </div>
@@ -127,12 +125,6 @@ export const HudOverlay: React.FC<HudOverlayProps> = ({
 };
 
 const SignalBars: React.FC<{ latency: number }> = ({ latency }) => {
-  // 4 bars total
-  // < 300ms: 4 bars
-  // < 600ms: 3 bars
-  // < 1000ms: 2 bars
-  // > 1000ms: 1 bar
-  
   const getStrength = () => {
     if (latency === 0) return 0;
     if (latency < 300) return 4;

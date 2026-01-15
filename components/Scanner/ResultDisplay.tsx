@@ -39,7 +39,7 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({ result }) => {
           transition={{ duration: 0.4, ease: "easeOut" }}
           className="text-center space-y-2"
         >
-          {/* Main Label with Glitch Effect */}
+          
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -52,7 +52,7 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({ result }) => {
             <h1 className="text-6xl font-bold text-foreground font-orbitron tracking-tight">
               {displayResult.label}
             </h1>
-            {/* Glitch overlay effect */}
+            
             <motion.div
               className="absolute inset-0 text-6xl font-bold text-accent mix-blend-screen"
               initial={{ opacity: 0, x: -2, y: 2 }}
@@ -70,7 +70,7 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({ result }) => {
             </motion.div>
           </motion.div>
 
-          {/* Confidence Score */}
+          
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -84,7 +84,7 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({ result }) => {
             <div className="h-px w-12 bg-gradient-to-l from-transparent to-accent" />
           </motion.div>
 
-          {/* Confidence Label */}
+
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -94,7 +94,7 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({ result }) => {
             CONFIDENCE LEVEL
           </motion.div>
 
-          {/* Decorative Elements */}
+          
           <motion.div
             className="absolute -top-4 left-1/2 -translate-x-1/2 w-1 h-8 bg-gradient-to-b from-accent to-transparent"
             initial={{ scaleY: 0 }}

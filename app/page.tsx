@@ -24,13 +24,11 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-8 relative overflow-hidden">
-        {/* Background Gradients */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
             <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-accent/10 rounded-full blur-[100px]" />
             <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/10 rounded-full blur-[100px]" />
         </div>
 
-        {/* Info & Credits Button */}
         <div className="absolute top-8 right-8 z-20">
             <button 
                 onClick={() => setViewMode("CONTRIBUTORS")}
@@ -59,7 +57,6 @@ export default function Home() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-                {/* Upload Mode Card */}
                 <motion.button
                     whileHover={{ scale: 1.02, translateY: -5 }}
                     whileTap={{ scale: 0.98 }}
@@ -80,7 +77,6 @@ export default function Home() {
                     </div>
                 </motion.button>
 
-                {/* Live Mode Card */}
                 <motion.button
                     whileHover={{ scale: 1.02, translateY: -5 }}
                     whileTap={{ scale: 0.98 }}

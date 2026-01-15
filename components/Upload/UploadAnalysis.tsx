@@ -17,7 +17,6 @@ export const UploadAnalysis = ({ onBack }: { onBack: () => void }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropZoneRef = useRef<HTMLDivElement>(null);
 
-  // URL validation helper
   const isValidImageUrl = (url: string): boolean => {
     try {
       const parsed = new URL(url);
@@ -27,7 +26,6 @@ export const UploadAnalysis = ({ onBack }: { onBack: () => void }) => {
     }
   };
 
-  // Handle paste event for URL
   useEffect(() => {
     const handlePaste = async (e: ClipboardEvent) => {
       const pastedText = e.clipboardData?.getData("text")?.trim();
@@ -42,14 +40,12 @@ export const UploadAnalysis = ({ onBack }: { onBack: () => void }) => {
     return () => document.removeEventListener("paste", handlePaste);
   }, []);
 
-  // Handle URL-based classification
   const handleUrlSubmit = async (url: string) => {
     setImage(url);
     setImageSource("url");
     setError(null);
     setLoadingState("UPLOADING");
 
-    // Simulated visual delays for UX
     setTimeout(() => {
       setLoadingState("PROCESSING");
 
@@ -68,12 +64,10 @@ export const UploadAnalysis = ({ onBack }: { onBack: () => void }) => {
     }, 500);
   };
 
-  // Handle file upload (existing logic)
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Preview
     const reader = new FileReader();
     reader.onload = (e) => setImage(e.target?.result as string);
     reader.readAsDataURL(file);
@@ -82,7 +76,6 @@ export const UploadAnalysis = ({ onBack }: { onBack: () => void }) => {
     setError(null);
     setLoadingState("UPLOADING");
 
-    // Resize Logic (Client-Side Optimization)
     const img = new Image();
     img.src = URL.createObjectURL(file);
     img.onload = () => {
@@ -93,7 +86,6 @@ export const UploadAnalysis = ({ onBack }: { onBack: () => void }) => {
       const ctx = canvas.getContext("2d");
 
       if (ctx) {
-        // Center Crop Strategy
         const minDim = Math.min(img.width, img.height);
         const startX = (img.width - minDim) / 2;
         const startY = (img.height - minDim) / 2;
@@ -107,14 +99,12 @@ export const UploadAnalysis = ({ onBack }: { onBack: () => void }) => {
              return;
           }
 
-          // Sim Visual Delays (Reduced for speed feeling)
           setTimeout(() => {
             setLoadingState("PROCESSING");
 
             setTimeout(async () => {
               setLoadingState("CLASSIFYING");
 
-              // Actual API Call with Optimized Blob
               try {
                 const response = await predictObject(blob);
                 setResult(response);
@@ -130,7 +120,6 @@ export const UploadAnalysis = ({ onBack }: { onBack: () => void }) => {
     };
   };
 
-  // Reset state
   const handleReset = () => {
     setImage(null);
     setImageSource(null);
@@ -141,7 +130,6 @@ export const UploadAnalysis = ({ onBack }: { onBack: () => void }) => {
 
   return (
     <div className="min-h-screen bg-slate-950 text-foreground p-8 flex flex-col items-center">
-      {/* Header */}
       <div className="w-full max-w-4xl flex justify-between items-center mb-12">
         <button
           onClick={onBack}
@@ -153,7 +141,6 @@ export const UploadAnalysis = ({ onBack }: { onBack: () => void }) => {
       </div>
 
       <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-12">
-        {/* Left Column: Upload Zone */}
         <div className="space-y-8">
             <div 
                 ref={dropZoneRef}
@@ -220,7 +207,6 @@ export const UploadAnalysis = ({ onBack }: { onBack: () => void }) => {
             </div>
         </div>
 
-        {/* Right Column: Status & Results */}
         <div className="flex flex-col justify-center space-y-8 min-h-[400px]">
             <AnimatePresence mode="wait">
                 {loadingState === "IDLE" && !error && (
@@ -258,7 +244,6 @@ export const UploadAnalysis = ({ onBack }: { onBack: () => void }) => {
                         exit={{ opacity: 0 }}
                         className="space-y-6"
                     >
-                        {/* Progress Steps */}
                         <div className="space-y-4">
                             <Step 
                                 label={imageSource === "url" ? "Fetching from URL..." : "Uploading Specimen..."} 
@@ -274,7 +259,6 @@ export const UploadAnalysis = ({ onBack }: { onBack: () => void }) => {
                             />
                         </div>
 
-                        {/* Spinner */}
                         <div className="flex justify-center pt-8">
                             <Scan className="w-16 h-16 text-accent animate-pulse" />
                         </div>
@@ -318,7 +302,6 @@ export const UploadAnalysis = ({ onBack }: { onBack: () => void }) => {
   );
 };
 
-// Helper for loading steps
 const Step = ({ label, status }: { label: string; status: "pending" | "active" | "complete" }) => {
     return (
         <div className={`flex items-center gap-4 ${status === "pending" ? "opacity-30" : "opacity-100"}`}>
